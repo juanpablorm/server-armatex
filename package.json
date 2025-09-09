@@ -5,7 +5,6 @@
   "scripts": {
     "start": "node index.js"
   },
-  "engines": { "node": ">=18" },        // opcional
   "dependencies": {
     "express": "^4.19.0",
     "cors": "^2.8.5",
