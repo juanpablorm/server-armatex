@@ -50,7 +50,7 @@ app.get("/api/models3d", async (_req, res) => {
               description,
               model_src  AS modelSrc,
               poster_src AS posterSrc
-       FROM models_3d
+       FROM models3d
        ORDER BY id DESC`
     );
     res.json(rows);
