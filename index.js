@@ -5,6 +5,8 @@ const mysql = require("mysql2/promise");
 
 dotenv.config();
 
+const DEBUG_DB = (process.env.DEBUG_DB || "0") === "1";
+
 const app = express();
 app.set("trust proxy", 1);
 
@@ -49,16 +51,29 @@ app.get("/api/models3d", async (_req, res) => {
               model_src  AS modelSrc,
               poster_src AS posterSrc
        FROM models_3d
-       ORDER BY updated_at DESC`
+       ORDER BY id DESC`
     );
     res.json(rows);
   } catch (err) {
-    console.error("DB error on /api/models3d:", err);
-    res.status(500).json({ error: "DB_ERROR" });
+    console.error("DB error on /api/models3d:", err.code, err.sqlMessage || err.message);
+    res.status(500).json({
+      error: "DB_ERROR",
+      code: err.code,
+      message: DEBUG_DB ? (err.sqlMessage || err.message) : undefined
+    });
   }
 });
 
-// 404 para rutas /api no definidas
+app.get("/api/db/ping", async (_req, res) => {
+  try {
+    const [r] = await pool.query("SELECT 1 AS ok");
+    res.json(r[0]); // { ok: 1 }
+  } catch (e) {
+    console.error("DB PING ERROR:", e.code, e.message);
+    res.status(500).json({ error: "DB_PING_ERROR", code: e.code, message: DEBUG_DB ? e.message : undefined });
+  }
+});
+
 app.use("/api", (_req, res) => res.status(404).json({ error: "NOT_FOUND" }));
 
 const port = process.env.PORT || 10000; // Render inyecta PORT
